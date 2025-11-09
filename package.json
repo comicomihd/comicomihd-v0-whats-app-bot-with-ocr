@@ -1,0 +1,38 @@
+{
+  "name": "whatsapp-bot-colorir",
+  "version": "1.0.0",
+  "description": "Bot WhatsApp para vender livros de colorir cristão",
+  "main": "dist/bot.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node bot.ts",
+    "start": "node dist/bot.js"
+  },
+  "dependencies": {
+    "axios": "latest",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "dotenv": "^16.3.1",
+    "express": "latest",
+    "fs": "latest",
+    "lucide-react": "^0.454.0",
+    "next": "16.0.1",
+    "path": "latest",
+    "qrcode-terminal": "latest",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "tailwind-merge": "^2.5.5",
+    "tailwindcss-animate": "^1.0.7",
+    "whatsapp-web.js": "latest"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "postcss": "^8.5",
+    "tailwindcss": "4.1.17",
+    "ts-node": "^10.9.1",
+    "typescript": "^5"
+  }
+}
