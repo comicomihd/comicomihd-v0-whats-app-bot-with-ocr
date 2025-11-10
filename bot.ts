@@ -6,11 +6,34 @@ const axios = require("axios")
 
 const client = new Client()
 
+interface ClientsData {
+  [clientId: string]: number
+}
+
+interface UserStateData {
+  [clientId: string]: string
+}
+
+interface PaymentCheckResponse {
+  hasPaid: boolean
+}
+
+interface FAQQuestion {
+  id: string
+  question: string
+  response: string
+}
+
+interface ObjectionHandler {
+  patterns: RegExp[]
+  response: string
+}
+
 // Arquivo para armazenar clientes já atendidos
 const clientsFile = path.join(__dirname, "clients.json")
 
 // Função para carregar dados de clientes
-const loadClients = () => {
+const loadClients = (): ClientsData => {
   try {
     if (fs.existsSync(clientsFile)) {
       const data = fs.readFileSync(clientsFile, "utf8")
@@ -23,12 +46,12 @@ const loadClients = () => {
 }
 
 // Função para salvar dados de clientes
-const saveClients = (clients) => {
+const saveClients = (clients: ClientsData): void => {
   fs.writeFileSync(clientsFile, JSON.stringify(clients, null, 2))
 }
 
 // Função para verificar se pode responder ao cliente (24 horas)
-const canRespond = (clientId) => {
+const canRespond = (clientId: string): boolean => {
   // Reativando 24-hour limit check
   const clients = loadClients()
   if (!clients[clientId]) {
@@ -43,14 +66,14 @@ const canRespond = (clientId) => {
 }
 
 // Reactivando função para atualizar o tempo de resposta do cliente
-const updateClientResponseTime = (clientId) => {
+const updateClientResponseTime = (clientId: string): void => {
   const clients = loadClients()
   clients[clientId] = Date.now()
   saveClients(clients)
 }
 
 // Função para obter saudação baseada na hora
-const getGreeting = () => {
+const getGreeting = (): string => {
   const hour = new Date().getHours()
 
   if (hour >= 5 && hour < 12) {
@@ -63,10 +86,10 @@ const getGreeting = () => {
 }
 
 // Função de delay
-const delay = (ms) => new Promise((res) => setTimeout(res, ms))
+const delay = (ms: number): Promise<void> => new Promise((res) => setTimeout(res, ms))
 
 // QR Code
-client.on("qr", (qr) => {
+client.on("qr", (qr: string) => {
   qrcode.generate(qr, { small: true })
 })
 
@@ -81,8 +104,7 @@ const keywordPatterns = [
   /tenho d[uú]vidas sobre os livros de colorir/i,
 ]
 
-// Mapeamento de objeções comuns e respostas persuasivas
-const objectionHandlers = {
+const objectionHandlers: { [key: string]: ObjectionHandler } = {
   price: {
     patterns: [/muito caro|caro|preço alto|não tenho dinheiro|apertado|parcelado|desconto/i],
     response:
@@ -184,9 +206,9 @@ const objectionHandlers = {
   },
 }
 
-const userState = {}
+const userState: UserStateData = {}
 
-const faqQuestions = [
+const faqQuestions: FAQQuestion[] = [
   {
     id: "1",
     question: "É confiável? Vou receber mesmo?",
@@ -232,7 +254,7 @@ const faqQuestions = [
 ]
 
 // Função para enviar status online
-const sendOnlineStatus = async (chat) => {
+const sendOnlineStatus = async (chat: any): Promise<void> => {
   try {
     await chat.sendStatePaused()
     await delay(3000)
@@ -242,10 +264,10 @@ const sendOnlineStatus = async (chat) => {
 }
 
 // Função para detectar e responder FAQ
-const detectAndAnswerFAQ = async (msg, chat) => {
+const detectAndAnswerFAQ = async (msg: any, chat: any): Promise<boolean> => {
   let faqAnswered = false
   for (const [key, value] of Object.entries(objectionHandlers)) {
-    if (value.patterns.some((pattern) => pattern.test(msg.body))) {
+    if (value.patterns.some((pattern: RegExp) => pattern.test(msg.body))) {
       await client.sendMessage(msg.from, value.response)
       faqAnswered = true
       break
@@ -255,7 +277,7 @@ const detectAndAnswerFAQ = async (msg, chat) => {
 }
 
 // Função para verificar pagamento via webhook
-const checkPaymentStatus = async (phoneNumber) => {
+const checkPaymentStatus = async (phoneNumber: string): Promise<PaymentCheckResponse> => {
   try {
     const response = await axios.get(`http://localhost:3001/api/check-payment/${phoneNumber}`)
     return response.data
@@ -265,7 +287,7 @@ const checkPaymentStatus = async (phoneNumber) => {
   }
 }
 
-client.on("message", async (msg) => {
+client.on("message", async (msg: any) => {
   try {
     const chat = await msg.getChat()
     if (chat.isGroup) {
